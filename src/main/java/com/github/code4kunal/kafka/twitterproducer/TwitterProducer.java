@@ -1,6 +1,7 @@
 package com.github.code4kunal.kafka.twitterproducer;
 
 
+import com.github.code4kunal.kafka.kafkabasics.producers.KafkaProducerConfig;
 import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
@@ -11,6 +12,10 @@ import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +45,15 @@ public class TwitterProducer {
         Client client  = scaffoldTwitterClient(msgQueue);
         client.connect();
 
+        KafkaProducer<String, String> producer = createKafkaProducer();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->{
+            logger.info("Stopping Application.....!");
+            logger.info(("Shutting down twitter client!"));
+            client.stop();
+            logger.info("Shutting down kafka producer!");
+            producer.close();
+        }));
         // on a different thread, or multiple different threads....
         while (!client.isDone()) {
             String msg = null;
@@ -50,11 +64,25 @@ public class TwitterProducer {
                 client.stop();
             }
             if(msg!=null){
-//                System.out.println(msg);
                 logger.info(msg);
+                producer.send(new ProducerRecord<String, String>("tweets", null, msg), new Callback() {
+                    @Override
+                    public void onCompletion(RecordMetadata recordMetadata, Exception ex) {
+                        if(ex!=null){
+                            logger.error("Error sending message", ex);
+                        }
+                    }
+                });
             }
         }
         logger.info("Ending Application!!");
+    }
+
+    private KafkaProducer<String,String> createKafkaProducer() {
+        KafkaProducer<String, String> producer = new KafkaProducer<String, String>(KafkaProducerConfig.getProperties());
+
+       return producer;
+
     }
 
     public Client scaffoldTwitterClient(BlockingQueue<String> msgQueue) {
@@ -63,14 +91,14 @@ public class TwitterProducer {
         Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
         // Optional: set up some followings and track terms
-        List<String> terms = Lists.newArrayList("java", "covid19", "coronavirus");
+        List<String> terms = Lists.newArrayList("java", "covid19", "coronavirus", "usa", "politics");
         hosebirdEndpoint.trackTerms(terms);
 
         // These secrets should be read from a config file
         Authentication hosebirdAuth = new OAuth1(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
 
         ClientBuilder builder = new ClientBuilder()
-                .name("Hosebird-Client-01")                              // optional: mainly for the logs
+                .name("Mt-Twitter-client")                              // optional: mainly for the logs
                 .hosts(hosebirdHosts)
                 .authentication(hosebirdAuth)
                 .endpoint(hosebirdEndpoint)
