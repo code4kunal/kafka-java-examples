@@ -1,4 +1,4 @@
-package com.github.code4kunal.kafka.producers;
+package com.github.code4kunal.kafka.kafkabasics.producers;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;

@@ -1,4 +1,4 @@
-package com.github.code4kunal.kafka.consumers;
+package com.github.code4kunal.kafka.kafkabasics.consumers;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;

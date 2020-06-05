@@ -1,6 +1,6 @@
-package com.github.code4kunal.kafka.consumers;
+package com.github.code4kunal.kafka.kafkabasics.consumers;
 
-import com.github.code4kunal.kafka.producers.KafkaProducerWithCallbackDemo;
+import com.github.code4kunal.kafka.kafkabasics.producers.KafkaProducerWithCallbackDemo;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;

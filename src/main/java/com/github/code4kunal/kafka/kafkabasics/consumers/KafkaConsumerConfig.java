@@ -1,4 +1,4 @@
-package com.github.code4kunal.kafka.consumers;
+package com.github.code4kunal.kafka.kafkabasics.consumers;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
